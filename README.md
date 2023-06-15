@@ -44,4 +44,11 @@ func main() {
   - **Client.Authenticate()**: Authenticates and gets API Access Token.
   - **Client.Get(name)**: Fetches secret value from the specified application.
 
+## TODO:
+
+  - [ ] Implement TDD approach.
+  - [ ] Implement NewClient function.
+  - [ ] Implement List method.
+  - [ ] Implement GetAll method.
+
 Copyright 2023 Saeid Bostandoust <ssbostan@yahoo.com>
