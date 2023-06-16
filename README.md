@@ -19,15 +19,15 @@ import (
 )
 
 func main() {
-	client := vaultsecrets.Client{
-		OrganizationID:  "HCP_ORGANIZATION_ID",
-		ProjectID:       "HCP_PROJECT_ID",
-		ApplicationName: "HCP_APPLICATION_NAME",
-		ClientID:        "HCP_CLIENT_ID",
-		ClientSecret:    "HCP_CLIENT_SECRET",
-	}
-	if err := client.Authenticate(); err != nil {
-		log.Fatal(err)
+	client, err := vaultsecrets.NewClient(
+		"HCP_ORGANIZATION_ID",
+		"HCP_PROJECT_ID",
+		"HCP_APPLICATION_NAME",
+		"HCP_CLIENT_ID",
+		"HCP_CLIENT_SECRET",
+	)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	secret, err := client.Get("MY_APP_SECRET")
@@ -39,15 +39,15 @@ func main() {
 }
 ```
 
-## Available methods:
+## Available functions/methods:
+
+  - **NewClient(o, p, a, clientID, clientSecret)**: Returns ready to use Client struct.
 
   - **Client.Authenticate()**: Authenticates and gets API Access Token.
   - **Client.Get(name)**: Fetches secret value from the specified application.
 
 ## TODO:
 
-  - [ ] Implement TDD approach.
-  - [ ] Implement NewClient function.
   - [ ] Implement List method.
   - [ ] Implement GetAll method.
 
