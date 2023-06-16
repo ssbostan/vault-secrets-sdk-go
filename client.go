@@ -98,3 +98,25 @@ func (c *Client) Get(name string) (string, error) {
 
 	return secretData["secret"].(map[string]interface{})["version"].(map[string]interface{})["value"].(string), nil
 }
+
+func NewClient(
+	organizationID string,
+	projectID string,
+	applicationName string,
+	clientID string,
+	clientSecret string,
+) (Client, error) {
+	client := Client{
+		OrganizationID:  organizationID,
+		ProjectID:       projectID,
+		ApplicationName: applicationName,
+		ClientID:        clientID,
+		ClientSecret:    clientSecret,
+	}
+
+	if err := client.Authenticate(); err != nil {
+		return Client{}, err
+	}
+
+	return client, nil
+}

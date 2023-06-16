@@ -39,3 +39,16 @@ func TestGet(t *testing.T) {
 		}
 	}
 }
+
+func TestNewClient(t *testing.T) {
+	_, err := NewClient(
+		os.Getenv("HCP_ORGANIZATION_ID"),
+		os.Getenv("HCP_PROJECT_ID"),
+		os.Getenv("HCP_APPLICATION_NAME"),
+		os.Getenv("HCP_CLIENT_ID"),
+		os.Getenv("HCP_CLIENT_SECRET"),
+	)
+	if err != nil {
+		t.Errorf("client NewClient error: %s", err)
+	}
+}
