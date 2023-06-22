@@ -2,6 +2,7 @@ package vaultsecrets
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -37,6 +38,34 @@ func TestGet(t *testing.T) {
 		if secret != test.expectedValue {
 			t.Errorf("client Get error: Could not meet expected value.")
 		}
+	}
+}
+
+func TestList(t *testing.T) {
+	secrets, err := client.List()
+	if err != nil {
+		t.Errorf("client List error: %s", err)
+	}
+
+	if !reflect.DeepEqual(secrets, []string{"MY_APP_SECRET", "SDK_TEST"}) {
+		t.Errorf("client List error: Could not meet expected value.")
+	}
+}
+
+func TestGetAll(t *testing.T) {
+	secrets, err := client.GetAll()
+	if err != nil {
+		t.Errorf("client GetAll error: %s", err)
+	}
+
+	if !reflect.DeepEqual(
+		secrets,
+		map[string]string{
+			"MY_APP_SECRET": "TEST",
+			"SDK_TEST":      "OK",
+		},
+	) {
+		t.Errorf("client GetAll error: Could not meet expected value.")
 	}
 }
 

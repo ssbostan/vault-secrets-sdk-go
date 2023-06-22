@@ -99,6 +99,72 @@ func (c *Client) Get(name string) (string, error) {
 	return secretData["secret"].(map[string]interface{})["version"].(map[string]interface{})["value"].(string), nil
 }
 
+func (c *Client) List() ([]string, error) {
+	httpRequest, err := http.NewRequest(
+		"GET",
+		fmt.Sprintf(
+			"%s/organizations/%s/projects/%s/apps/%s/secrets",
+			VaultSecretsURL, c.OrganizationID, c.ProjectID, c.ApplicationName,
+		),
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
+
+	httpResponse, err := http.DefaultClient.Do(httpRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	defer httpResponse.Body.Close()
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(
+			"Could not retrieve secrets with %d status code.", httpResponse.StatusCode,
+		)
+	}
+
+	httpResponseData, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var secretsData map[string]interface{}
+	if err := json.Unmarshal(httpResponseData, &secretsData); err != nil {
+		return nil, err
+	}
+
+	var secrets []string
+
+	for _, secret := range secretsData["secrets"].([]interface{}) {
+		secrets = append(secrets, secret.(map[string]interface{})["name"].(string))
+	}
+
+	return secrets, nil
+}
+
+func (c *Client) GetAll() (map[string]string, error) {
+	secrets, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	secretValues := make(map[string]string)
+
+	for _, secret := range secrets {
+		secretValues[secret], err = c.Get(secret)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return secretValues, nil
+}
+
 func NewClient(
 	organizationID string,
 	projectID string,
