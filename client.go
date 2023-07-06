@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -42,7 +42,7 @@ func (c *Client) Authenticate() error {
 		)
 	}
 
-	httpResponseData, err := ioutil.ReadAll(httpResponse.Body)
+	httpResponseData, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (c *Client) Get(name string) (string, error) {
 		)
 	}
 
-	httpResponseData, err := ioutil.ReadAll(httpResponse.Body)
+	httpResponseData, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
 		return "", err
 	}
@@ -128,7 +128,7 @@ func (c *Client) List() ([]string, error) {
 		)
 	}
 
-	httpResponseData, err := ioutil.ReadAll(httpResponse.Body)
+	httpResponseData, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
 		return nil, err
 	}
