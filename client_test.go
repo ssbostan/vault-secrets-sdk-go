@@ -41,6 +41,31 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestGetLatestVersion(t *testing.T) {
+	tests := []struct {
+		secretName    string
+		expectedValue int
+	}{
+		{"NOT_FOUND_SECRET", 0},
+		{"SDK_TEST", 1},
+	}
+
+	for _, test := range tests {
+		version, _ := client.GetLatestVersion(test.secretName)
+		if version != test.expectedValue {
+			t.Errorf("client GetLatestVersion error: Could not meet expected value.")
+		}
+	}
+}
+
+func TestCreate(t *testing.T) {
+	version, _ := client.GetLatestVersion("MY_APP_SECRET")
+	newVersion, _ := client.Create("MY_APP_SECRET", "SDK_TEST")
+	if version+1 != newVersion {
+		t.Errorf("client Create error: New version of secret was not created")
+	}
+}
+
 func TestList(t *testing.T) {
 	secrets, err := client.List()
 	if err != nil {
