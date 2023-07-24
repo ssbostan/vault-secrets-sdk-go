@@ -51,6 +51,16 @@ func main() {
 	for key, value := range secrets {
 		fmt.Printf("%s: %s\n", key, value)
 	}
+
+	secretVersion, err := client.GetLatestVersion("MY_APP_SECRET")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	
+	newSecretVersion, err := client.Create("MY_APP_SECRET")
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 ```
 
@@ -61,5 +71,7 @@ func main() {
   - **Client.Get(name)**: Fetches secret value from the specified application.
   - **Client.List()**: List all secrets in the specified application.
   - **Client.GetAll()**: Get value of all secrets in the specified application.
+  - **Client.GetLatestVersion()**: Get latest version number of secret from the specified application.
+  - **Client.Create()**: Create new secret in the specified application. 
 
 Copyright 2023 Saeid Bostandoust <ssbostan@yahoo.com>

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 func (c *Client) Authenticate() error {
@@ -97,6 +98,107 @@ func (c *Client) Get(name string) (string, error) {
 	}
 
 	return secretData["secret"].(map[string]interface{})["version"].(map[string]interface{})["value"].(string), nil
+}
+
+func (c *Client) GetLatestVersion(name string) (int, error) {
+	httpRequest, err := http.NewRequest(
+		"GET",
+		fmt.Sprintf(
+			"%s/organizations/%s/projects/%s/apps/%s/open/%s",
+			VaultSecretsURL, c.OrganizationID, c.ProjectID, c.ApplicationName, name,
+		),
+		nil,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
+
+	httpResponse, err := http.DefaultClient.Do(httpRequest)
+	if err != nil {
+		return 0, err
+	}
+
+	defer httpResponse.Body.Close()
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(
+			"Could not retrieve '%s' secret with %d status code.",
+			name, httpResponse.StatusCode,
+		)
+	}
+
+	httpResponseData, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	var secretData map[string]interface{}
+	if err := json.Unmarshal(httpResponseData, &secretData); err != nil {
+		return 0, err
+	}
+
+	latestVersion, err := strconv.Atoi(secretData["secret"].(map[string]interface{})["latest_version"].(string))
+	if err != nil {
+		return 0, err
+	}
+	return latestVersion, nil
+}
+
+func (c *Client) Create(name string, value string) (int, error) {
+	createSecretData, err := json.Marshal(
+		map[string]string{
+			"name":  name,
+			"value": value,
+		},
+	)
+	if err != nil {
+		return 0, err
+	}
+	httpRequest, err := http.NewRequest(
+		"POST",
+		fmt.Sprintf(
+			"%s/organizations/%s/projects/%s/apps/%s/kv",
+			VaultSecretsURL, c.OrganizationID, c.ProjectID, c.ApplicationName,
+		),
+		bytes.NewReader(createSecretData),
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
+
+	httpResponse, err := http.DefaultClient.Do(httpRequest)
+	if err != nil {
+		return 0, err
+	}
+	defer httpResponse.Body.Close()
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(
+			"Could not add '%s' secret with %d status code.",
+			name, httpResponse.StatusCode,
+		)
+	}
+
+	httpResponseData, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	var secretData map[string]interface{}
+	if err := json.Unmarshal(httpResponseData, &secretData); err != nil {
+		return 0, err
+	}
+	latestVersion, err := strconv.Atoi(secretData["secret"].(map[string]interface{})["latest_version"].(string))
+	if err != nil {
+		return 0, err
+	}
+	return latestVersion, nil
 }
 
 func (c *Client) List() ([]string, error) {
